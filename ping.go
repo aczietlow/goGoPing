@@ -22,10 +22,9 @@ func main() {
 	//	panic(err)
 	//}
 	//
-	//fmt.Printf("ping %s\n", url)
-	//fmt.Printf("ping %s\n", url)
+
 	foo := networkingMagic()
-	fmt.Printf("%v", foo)
+	fmt.Printf("%v\r\n", foo)
 
 }
 
@@ -96,20 +95,21 @@ func Ping(targetIP *net.IPAddr) {
 		log.Fatal(err)
 	}
 
+	// @TODO I think I have the type and code fields backwards.
 	switch rm.Type {
 	case ipv4.ICMPTypeEchoReply:
-		log.Printf("got reflection from %v\x0A", peer)
+		fmt.Printf("got reflection from %v. ", peer)
 		switch rm.Code {
 		case 0:
-			fmt.Printf("Reply received from %s\x0A", targetIP)
+			fmt.Printf("Reply received from %s\r\n", targetIP)
 		case 3:
-			fmt.Printf("The Host %s is unreachable\n", targetIP)
+			fmt.Printf("The Host %s is unreachable\r\n", targetIP)
 		case 11:
-			fmt.Printf("Host %s is slow\n", targetIP)
+			fmt.Printf("Host %s is slow\r\n", targetIP)
 		default:
-			fmt.Printf("The Host %s is unreachable\n", targetIP)
+			fmt.Printf("The Host %s is unreachable\r\n", targetIP)
 		}
 	default:
-		log.Printf("got %+v; want echo reply", rm)
+		log.Printf("got %+v; want echo reply\r\n", rm)
 	}
 }
