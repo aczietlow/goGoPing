@@ -21,6 +21,9 @@ A rewrite of the ping application from C to go
 ## TIL
 
 * Go's visibility flag are denoted by lowercase and capitalize letters
+* https://pkg.go.dev/golang.org/x/net/icmp exists
+** probably don't want to entirely reinvent this wheel
+
 
 ```go
 package main
