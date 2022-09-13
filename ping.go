@@ -16,14 +16,15 @@ func main() {
 
 	defer terminal.Restore()
 
-	//fmt.Println("Enter an web address")
+	//fmt.Printf("Enter an web address\r\n")
 	//url, err := terminal.Terminal.ReadLine()
 	//if err != nil {
 	//	panic(err)
 	//}
-	//
+	//fmt.Print(url)
 
 	foo := networkingMagic()
+
 	fmt.Printf("%v\r\n", foo)
 
 }
@@ -38,7 +39,7 @@ func networkingMagic() *net.IPAddr {
 		panic(err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 		time.Sleep(1 * time.Second)
 		Ping(ip)
 	}
@@ -54,7 +55,7 @@ func Ping(targetIP *net.IPAddr) {
 		log.Fatal(err)
 	}
 
-	// wrap handler in closure.
+	// Wrap handler in a closure.
 	defer func(c *icmp.PacketConn) {
 		err := c.Close()
 		if err != nil {

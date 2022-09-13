@@ -1,6 +1,6 @@
 # GoGoPing
 
-A rewrite of the ping application from C to go
+A rewrite of the ping application from C to go. Create a tool that is useful in debugging connections to the Internet.
 
 ## But Why Though?
 
@@ -8,7 +8,16 @@ A rewrite of the ping application from C to go
 2) I thought it would be fun
 3) Learning
 
-## Rules
+## Requirements
+
+* Take a hostname or ipaddress as input
+  * Do a DNS Lookup
+* Opens a socket
+* When Ctl+c is pressed to exit, present the user with a report of aggregated statistics
+* Support command line arguments
+  * `ping 127.0.0.1 -f -l 1400 -Fails`
+
+### Rules
 
 1) Limit resources to the following go lang spec, wikipedia, networking RFCs, effective go, the go std library
 2) Attempt to make use of concurrency
@@ -21,9 +30,9 @@ A rewrite of the ping application from C to go
 ## TIL
 
 * Go's visibility flag are denoted by lowercase and capitalize letters
+  * They're as Exported and unexported
 * https://pkg.go.dev/golang.org/x/net/icmp exists
-** probably don't want to entirely reinvent this wheel
-
+  * probably don't want to entirely reinvent this wheel
 
 ```go
 package main
