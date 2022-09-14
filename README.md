@@ -29,6 +29,8 @@ A rewrite of the ping application from C to go. Create a tool that is useful in 
 
 ## TIL
 
+### Struct fields exported or unexported
+
 * Go's visibility flag are denoted by lowercase and capitalize letters
   * They're as Exported and unexported
 * https://pkg.go.dev/golang.org/x/net/icmp exists
@@ -45,3 +47,9 @@ type animal struct {
 
 `animal.Cute` would be accessible to other packages
 `animal.legs` & `animal.food` would not be accessible to other packages.
+
+### defer statements
+
+Defer functions are executed in LIFO (last in first out) order.
+
+I'm using them as a way to ensure that claimed resources are restored once we're done with them.
