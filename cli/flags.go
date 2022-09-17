@@ -30,6 +30,8 @@ func initFlags() arguments {
 
 	// Arg() must be called after flag.Parse()
 	arg := flag.Arg(0)
+
+	// @TODO do weird BS time conversion on wait here to make it useful.
 	return arguments{
 		Options: options{
 			Count: *count,
