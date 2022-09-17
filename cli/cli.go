@@ -8,6 +8,7 @@ import (
 type cli struct {
 	State    *term.State
 	Terminal *term.Terminal
+	Args     arguments
 }
 
 func NewTerminal() *cli {
@@ -19,6 +20,7 @@ func NewTerminal() *cli {
 	return &cli{
 		State:    oldState,
 		Terminal: terminal,
+		Args:     initFlags(),
 	}
 }
 

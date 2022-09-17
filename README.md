@@ -14,8 +14,11 @@ A rewrite of the ping application from C to go. Create a tool that is useful in 
   * Do a DNS Lookup
 * Opens a socket
 * When Ctl+c is pressed to exit, present the user with a report of aggregated statistics
-* Support command line arguments
+* Support command line arguments and flags
   * `ping 127.0.0.1 -f -l 1400 -Fails`
+  * -l
+  * -t
+  * -f
 
 ### Rules
 
