@@ -83,7 +83,7 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 		log.Fatal(err)
 	}
 
-	// @TODO numOfBytes is the size of the ICMP message. Adding 20 bytes hard codes adding the ICMP packet and IP4 transport protocol.
+	// @TODO numOfBytes is the size of the ICMP message. Adding 20 bytes hard codes adding IP4 transport protocol.
 	bytes := numOfBytes + 20
 	switch receivedMessage.Type {
 	case ipv4.ICMPTypeEchoReply:

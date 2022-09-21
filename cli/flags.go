@@ -51,9 +51,6 @@ func initFlags() arguments {
 	}
 }
 
-//	String() string
-//	Set(string) error
-
 func (f *flagFloat32) String() string {
 	return fmt.Sprintf("%v", *f)
 }
