@@ -24,7 +24,7 @@ func main() {
 
 	// TODO fix this. This is the size of the ICMP packet and IPheader (see Miro)
 	// Include the 8 bytes from the header in when describing the total ICMP packet size.
-	fmt.Printf("PING %v (%v):  %v data bytes\r\n", url, ip4, size+8)
+	fmt.Printf("PING %v (%v):  %v data bytes\r\n", url, ip4, size)
 
 	// Grrr nothing likes to accept float32!!! Should probably fix this.
 	// Gives us rounded to 2 decimal places and converts to milliseconds.

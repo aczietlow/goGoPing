@@ -53,9 +53,7 @@ func (c *client) Close() {
 }
 
 func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
-	// @TODO generate a message body of n number of random bytes.
 	wm := pingDatagram(options.Size)
-	fmt.Printf("This is the size %v\r\n", options.Size)
 
 	wb, err := wm.Marshal(nil)
 	if err != nil {
@@ -84,7 +82,7 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 	}
 
 	// @TODO numOfBytes is the size of the ICMP message. Adding 20 bytes hard codes adding IP4 transport protocol.
-	bytes := numOfBytes + 20
+	bytes := numOfBytes
 	switch receivedMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
 

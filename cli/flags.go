@@ -21,6 +21,8 @@ type arguments struct {
 type flagFloat32 float32
 
 func initFlags() arguments {
+	// @TODO add error handling later
+	// @TODO add discoverability later
 	var flagFloat flagFloat32
 	count := flag.Int("c", 2, "Stop after sending (and receiving) Count ECHO_RESPONSE packets.  If this option is not specified, ping will operate until interrupted.")
 	// @TODO figure out if the super users part is enforced at the OS level or within Ping. & do that -
