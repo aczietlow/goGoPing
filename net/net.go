@@ -2,6 +2,7 @@ package net
 
 import (
 	"fmt"
+	"github.com/aczietlow/gogoping/cli"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"log"
@@ -51,16 +52,10 @@ func (c *client) Close() {
 	}
 }
 
-func (c *client) Ping(targetIP *network.IPAddr) {
-	//const targetIP = "74.125.138.138"
-
-	wm := icmp.Message{
-		Type: ipv4.ICMPTypeEcho, Code: 0,
-		Body: &icmp.Echo{
-			ID: os.Getpid() & 0xffff, Seq: 1,
-			Data: []byte("HELLO-R-U-THERE"),
-		},
-	}
+func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
+	// @TODO generate a message body of n number of random bytes.
+	wm := pingDatagram(options.Size)
+	fmt.Printf("This is the size %v\r\n", options.Size)
 
 	wb, err := wm.Marshal(nil)
 	if err != nil {
@@ -109,12 +104,26 @@ func (c *client) Ping(targetIP *network.IPAddr) {
 	}
 }
 
-func pingDatagram() icmp.Message {
+func pingDatagram(size int) icmp.Message {
+	dataBytes := make([]byte, 0, size)
+	dataBytes = append(dataBytes, 8)
+
+	// 8 Bytes are reserved for the ICMP header data
+	for len(dataBytes) < size-8 {
+		l := len(dataBytes)
+		// Because this is using hexadecimal, every 256 bytes added to the slice, start back at 0x00
+		if l%256 == 0 {
+			dataBytes = append(dataBytes, 00)
+		} else {
+			dataBytes = append(dataBytes, dataBytes[l-1]+0x01)
+		}
+	}
+
 	return icmp.Message{
 		Type: ipv4.ICMPTypeEcho, Code: 0,
 		Body: &icmp.Echo{
 			ID: os.Getpid() & 0xffff, Seq: 1,
-			Data: []byte("HELLO-R-U-THERE"),
+			Data: dataBytes,
 		},
 	}
 }

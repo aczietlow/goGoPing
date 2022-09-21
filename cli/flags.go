@@ -7,13 +7,14 @@ import (
 	"strconv"
 )
 
-type options struct {
+type Options struct {
 	Count int
 	Wait  float32
+	Size  int
 }
 
 type arguments struct {
-	Options options
+	Options Options
 	Arg     string
 }
 
@@ -25,17 +26,26 @@ func initFlags() arguments {
 	// @TODO figure out if the super users part is enforced at the OS level or within Ping. & do that -
 	// @TODO defining a custom flag var was a little extra for the actual needs here. Especially when we convert it to a floag64 later. Leaving this here for a hot minute as a lesson in interfaces and self-inflected pain.
 	flag.Var(&flagFloat, "w", "Wait interval seconds between sending each packet. The default is to wait for one second between each packet normally, or not to wait in flood mode. Only super-user may set interval to values less 0.2 seconds.")
+
+	// Size of data
+	size := flag.Int("s", 56, "Specifies the number of data bytes to be sent. The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data.")
+
 	// Called to parse all the flags.
 	flag.Parse()
+
+	if *size < 9 {
+		*size = 9
+	}
 
 	// Arg() must be called after flag.Parse()
 	arg := flag.Arg(0)
 
 	// @TODO do weird BS time conversion on wait here to make it useful.
 	return arguments{
-		Options: options{
+		Options: Options{
 			Count: *count,
 			Wait:  float32(flagFloat),
+			Size:  *size,
 		},
 		Arg: arg,
 	}
