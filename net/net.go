@@ -115,7 +115,7 @@ func pingDatagram(size int) icmp.Message {
 		if l%256 == 0 {
 			dataBytes = append(dataBytes, 00)
 		} else {
-			dataBytes = append(dataBytes, dataBytes[l-1]+0x01)
+			dataBytes = append(dataBytes, dataBytes[l-1]+01)
 		}
 	}
 
