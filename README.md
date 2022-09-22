@@ -56,3 +56,9 @@ type animal struct {
 Defer functions are executed in LIFO (last in first out) order.
 
 I'm using them as a way to ensure that claimed resources are restored once we're done with them.
+
+### Apple to the eye
+
+Apple ships with a different version of ping. Because why should I expect anything else.
+
+https://opensource.apple.com/source/network_cmds/network_cmds-511/ping.tproj/

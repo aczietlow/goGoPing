@@ -59,6 +59,11 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = c.Connection.IPv4PacketConn().SetTTL(options.TTL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if _, err := c.Connection.WriteTo(wb, &network.UDPAddr{IP: network.ParseIP(targetIP.String())}); err != nil {
 		log.Fatal(err)
 	}
@@ -70,33 +75,41 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 		panic(err)
 	}
 
-	rb := make([]byte, 1500)
-	numOfBytes, _, err := c.Connection.ReadFrom(rb)
+	icmpMessage := make([]byte, 1500)
 
+	// Shit I've tried to get the ip packet when reading the response and failed.
+	// Stepping up to the packet connection, doesn't seem to give me what I need
+	// I did learn that reading is clears the buffer, until a new request is received in the socket.
+
+	//ipr := make([]byte, 1500)
+	//c.Connection.IPv4PacketConn().ReadFrom(icmpMessage)
+	//_, _, _ = c.Connection.ReadFrom(ipr)
+	//if (runtime.GOOS == "darwin" || runtime.GOOS == "ios") && c.Connection.IPv4PacketConn() != nil {
+	//numOfBytes, cm, _, _ := c.Connection.IPv4PacketConn().ReadFrom(icmpMessage)
+	// numOfBytes, _, _ := c.Connection.IPv4PacketConn().PacketConn.ReadFrom(icmpMessage)
+	//}
+
+	// The OG statement
+	numOfBytes, _, err := c.Connection.ReadFrom(icmpMessage)
 	if err != nil {
 		log.Fatal(err)
 	}
-	receivedMessage, err := icmp.ParseMessage(ipv4.ICMPTypeEchoReply.Protocol(), rb[:numOfBytes])
+	receivedMessage, err := icmp.ParseMessage(ipv4.ICMPTypeEchoReply.Protocol(), icmpMessage[:numOfBytes])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// @TODO numOfBytes is the size of the ICMP message. Adding 20 bytes hard codes adding IP4 transport protocol.
-	bytes := numOfBytes
 	switch receivedMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
-
-		switch receivedMessage.Code {
-		// Echo Ping Reply
-		case 0:
-			fmt.Printf("%v bytes received from %v: icmp_seq=0 ttl=56 time=34.905 ms\r\n", bytes, targetIP)
-		case 3:
-			fmt.Printf("The Host %s is unreachable\r\n", targetIP)
-		case 11:
-			fmt.Printf("Host %s is slow\r\n", targetIP)
-		default:
-			fmt.Printf("The Host %s is unreachable\r\n", targetIP)
+		fmt.Printf("%v bytes received from %v: icmp_seq=0 ttl=101 time=34.905 ms\r\n", numOfBytes, targetIP)
+		// @TODO detect if this is different.
+		if numOfBytes != options.Size {
+			fmt.Printf("wrong total length %v instead of %v\r\n", numOfBytes, options.Size)
 		}
+	case ipv4.ICMPTypeDestinationUnreachable:
+		fmt.Printf("The Host %s is unreachable\r\n", targetIP)
+	case ipv4.ICMPTypeTimeExceeded:
+		fmt.Printf("Host %s is slow\r\n", targetIP)
 	default:
 		log.Printf("got %+v; want echo reply\r\n", receivedMessage)
 	}

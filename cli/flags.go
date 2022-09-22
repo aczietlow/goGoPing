@@ -11,6 +11,7 @@ type Options struct {
 	Count int
 	Wait  float32
 	Size  int
+	TTL   int
 }
 
 type arguments struct {
@@ -28,6 +29,9 @@ func initFlags() arguments {
 	// @TODO figure out if the super users part is enforced at the OS level or within Ping. & do that -
 	// @TODO defining a custom flag var was a little extra for the actual needs here. Especially when we convert it to a floag64 later. Leaving this here for a hot minute as a lesson in interfaces and self-inflected pain.
 	flag.Var(&flagFloat, "w", "Wait interval seconds between sending each packet. The default is to wait for one second between each packet normally, or not to wait in flood mode. Only super-user may set interval to values less 0.2 seconds.")
+
+	// TTL Flag
+	ttl := flag.Int("t", 64, "ttl. Set the IP Time to Live.")
 
 	// Size of data
 	size := flag.Int("s", 56, "Specifies the number of data bytes to be sent. The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data.")
@@ -48,6 +52,7 @@ func initFlags() arguments {
 			Count: *count,
 			Wait:  float32(flagFloat),
 			Size:  *size,
+			TTL:   *ttl,
 		},
 		Arg: arg,
 	}
