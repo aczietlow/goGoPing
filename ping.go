@@ -22,7 +22,6 @@ func main() {
 	ip4 := netClient.ResolveIpAddress(url)
 	size := options.Size
 
-	// TODO fix this. This is the size of the ICMP packet and IPheader (see Miro)
 	// Include the 8 bytes from the header in when describing the total ICMP packet size.
 	fmt.Printf("PING %v (%v):  %v data bytes\r\n", url, ip4, size)
 

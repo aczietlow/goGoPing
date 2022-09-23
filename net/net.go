@@ -84,19 +84,21 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options, seq int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if cm != nil {
+		ttl = cm.TTL
+	}
+
+	// Bitwise maths FTW, the seq is stored in 2 bytes. Then convert to int.
+	replySeq := int(uint16(receivedPayload[6])<<8 | uint16(receivedPayload[7]))
 
 	receivedICMPMessage, err := icmp.ParseMessage(ipv4.ICMPTypeEchoReply.Protocol(), receivedPayload[:numOfBytes])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if cm != nil {
-		ttl = cm.TTL
-	}
-	//@TODO get the seq from the response packet
 	switch receivedICMPMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
-		fmt.Printf("%v bytes received from %v: icmp_seq=0 ttl=%v time=34.905 ms\r\n", numOfBytes, targetIP, ttl)
+		fmt.Printf("%v bytes received from %v: icmp_seq=%v ttl=%v time=34.905 ms\r\n", numOfBytes, targetIP, replySeq, ttl)
 		if numOfBytes != options.Size {
 			fmt.Printf("wrong total length %v instead of %v\r\n", numOfBytes, options.Size)
 		}

@@ -62,3 +62,16 @@ I'm using them as a way to ensure that claimed resources are restored once we're
 Apple ships with a different version of ping. Because why should I expect anything else.
 
 https://opensource.apple.com/source/network_cmds/network_cmds-511/ping.tproj/
+
+### Bitwise OR operator
+
+`|` bitwise or operator.
+
+Copies any bits from either side of the equation
+
+```go
+var a,b,c uint8
+a = 60      // 0011 1100
+b = 13      // 0000 1101
+c = 60 | 13 // 0011 11011
+```
