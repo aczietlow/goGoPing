@@ -1,11 +1,5 @@
 # Todo list
 
-2022.09.22
-* Fix reading of data packets received
-* Throw warning when packets received aren't the expected size
-* Add TTL flag
-  * Stop manually setting TTL
-
 ## Backlog
 * Pull ICMP segments from received packet
 * Add timers

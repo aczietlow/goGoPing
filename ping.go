@@ -32,7 +32,7 @@ func main() {
 	ms := time.Duration(wait)
 	for i := 0; i < options.Count; i++ {
 		time.Sleep(ms * time.Millisecond)
-		netClient.Ping(ip4, options)
+		netClient.Ping(ip4, options, i+1)
 	}
 	// Debug'n shit
 	//fmt.Printf("flag is %v\r\n", url)

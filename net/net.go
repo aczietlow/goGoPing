@@ -52,8 +52,8 @@ func (c *client) Close() {
 	}
 }
 
-func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
-	wm := pingDatagram(options.Size)
+func (c *client) Ping(targetIP *network.IPAddr, options cli.Options, seq int) {
+	wm := pingDatagram(options.Size, seq)
 
 	wb, err := wm.Marshal(nil)
 	if err != nil {
@@ -61,6 +61,8 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 	}
 
 	err = c.Connection.IPv4PacketConn().SetTTL(options.TTL)
+	// Setting the control message, passes IP header info back when we call ReadFrom() in a *controlMessage
+	err = c.Connection.IPv4PacketConn().SetControlMessage(ipv4.FlagTTL, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,34 +77,26 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 		panic(err)
 	}
 
-	icmpMessage := make([]byte, 1500)
-
-	// Shit I've tried to get the ip packet when reading the response and failed.
-	// Stepping up to the packet connection, doesn't seem to give me what I need
-	// I did learn that reading is clears the buffer, until a new request is received in the socket.
-
-	//ipr := make([]byte, 1500)
-	//c.Connection.IPv4PacketConn().ReadFrom(icmpMessage)
-	//_, _, _ = c.Connection.ReadFrom(ipr)
-	//if (runtime.GOOS == "darwin" || runtime.GOOS == "ios") && c.Connection.IPv4PacketConn() != nil {
-	//numOfBytes, cm, _, _ := c.Connection.IPv4PacketConn().ReadFrom(icmpMessage)
-	// numOfBytes, _, _ := c.Connection.IPv4PacketConn().PacketConn.ReadFrom(icmpMessage)
-	//}
-
-	// The OG statement
-	numOfBytes, _, err := c.Connection.ReadFrom(icmpMessage)
-	if err != nil {
-		log.Fatal(err)
-	}
-	receivedMessage, err := icmp.ParseMessage(ipv4.ICMPTypeEchoReply.Protocol(), icmpMessage[:numOfBytes])
+	receivedPayload := make([]byte, 1500)
+	var cm *ipv4.ControlMessage
+	var ttl, numOfBytes int
+	numOfBytes, cm, _, err = c.Connection.IPv4PacketConn().ReadFrom(receivedPayload)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	switch receivedMessage.Type {
+	receivedICMPMessage, err := icmp.ParseMessage(ipv4.ICMPTypeEchoReply.Protocol(), receivedPayload[:numOfBytes])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if cm != nil {
+		ttl = cm.TTL
+	}
+	//@TODO get the seq from the response packet
+	switch receivedICMPMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
-		fmt.Printf("%v bytes received from %v: icmp_seq=0 ttl=101 time=34.905 ms\r\n", numOfBytes, targetIP)
-		// @TODO detect if this is different.
+		fmt.Printf("%v bytes received from %v: icmp_seq=0 ttl=%v time=34.905 ms\r\n", numOfBytes, targetIP, ttl)
 		if numOfBytes != options.Size {
 			fmt.Printf("wrong total length %v instead of %v\r\n", numOfBytes, options.Size)
 		}
@@ -111,11 +105,11 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options) {
 	case ipv4.ICMPTypeTimeExceeded:
 		fmt.Printf("Host %s is slow\r\n", targetIP)
 	default:
-		log.Printf("got %+v; want echo reply\r\n", receivedMessage)
+		log.Printf("got %+v; want echo reply\r\n", receivedICMPMessage)
 	}
 }
 
-func pingDatagram(size int) icmp.Message {
+func pingDatagram(size int, seq int) icmp.Message {
 	dataBytes := make([]byte, 0, size)
 	dataBytes = append(dataBytes, 8)
 
@@ -133,7 +127,8 @@ func pingDatagram(size int) icmp.Message {
 	return icmp.Message{
 		Type: ipv4.ICMPTypeEcho, Code: 0,
 		Body: &icmp.Echo{
-			ID: os.Getpid() & 0xffff, Seq: 1,
+			ID:   os.Getpid() & 0xffff,
+			Seq:  seq,
 			Data: dataBytes,
 		},
 	}
