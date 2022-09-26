@@ -13,6 +13,7 @@ import (
 
 type client struct {
 	Connection *icmp.PacketConn
+	DestIP     *network.IPAddr
 }
 
 func NewClient() *client {
@@ -52,7 +53,7 @@ func (c *client) Close() {
 	}
 }
 
-func (c *client) Ping(targetIP *network.IPAddr, options cli.Options, seq int) {
+func (c *client) Ping(options cli.Options, seq int) {
 	wm := pingDatagram(options.Size, seq)
 
 	wb, err := wm.Marshal(nil)
@@ -66,7 +67,7 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options, seq int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := c.Connection.WriteTo(wb, &network.UDPAddr{IP: network.ParseIP(targetIP.String())}); err != nil {
+	if _, err := c.Connection.WriteTo(wb, &network.UDPAddr{IP: network.ParseIP(c.DestIP.String())}); err != nil {
 		log.Fatal(err)
 	}
 
@@ -98,14 +99,14 @@ func (c *client) Ping(targetIP *network.IPAddr, options cli.Options, seq int) {
 
 	switch receivedICMPMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
-		fmt.Printf("%v bytes received from %v: icmp_seq=%v ttl=%v time=34.905 ms\r\n", numOfBytes, targetIP, replySeq, ttl)
+		fmt.Printf("%v bytes received from %v: icmp_seq=%v ttl=%v time=34.905 ms\r\n", numOfBytes, c.DestIP, replySeq, ttl)
 		if numOfBytes != options.Size {
 			fmt.Printf("wrong total length %v instead of %v\r\n", numOfBytes, options.Size)
 		}
 	case ipv4.ICMPTypeDestinationUnreachable:
-		fmt.Printf("The Host %s is unreachable\r\n", targetIP)
+		fmt.Printf("The Host %s is unreachable\r\n", c.DestIP)
 	case ipv4.ICMPTypeTimeExceeded:
-		fmt.Printf("Host %s is slow\r\n", targetIP)
+		fmt.Printf("Host %s is slow\r\n", c.DestIP)
 	default:
 		log.Printf("got %+v; want echo reply\r\n", receivedICMPMessage)
 	}

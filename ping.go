@@ -19,11 +19,12 @@ func main() {
 	defer netClient.Close()
 
 	url := terminal.Args.Arg
-	ip4 := netClient.ResolveIpAddress(url)
+	netClient.DestIP = netClient.ResolveIpAddress(url)
+
 	size := options.Size
 
 	// Include the 8 bytes from the header in when describing the total ICMP packet size.
-	fmt.Printf("PING %v (%v):  %v data bytes\r\n", url, ip4, size)
+	fmt.Printf("PING %v (%v):  %v data bytes\r\n", url, netClient.DestIP, size)
 
 	// Grrr nothing likes to accept float32!!! Should probably fix this.
 	// Gives us rounded to 2 decimal places and converts to milliseconds.
@@ -31,7 +32,7 @@ func main() {
 	ms := time.Duration(wait)
 	for i := 0; i < options.Count; i++ {
 		time.Sleep(ms * time.Millisecond)
-		netClient.Ping(ip4, options, i+1)
+		netClient.Ping(options, i+1)
 	}
 	// Debug'n shit
 	//fmt.Printf("flag is %v\r\n", url)
