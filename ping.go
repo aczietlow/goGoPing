@@ -14,12 +14,10 @@ func main() {
 	// Ensure that we gracefully restore the terminal connection.
 	defer terminal.Restore()
 
-	netClient := net.NewClient()
+	url := terminal.Args.Arg
+	netClient := net.NewClient(options, url)
 	// Ensure that as we exit gracefully we close the connection.
 	defer netClient.Close()
-
-	url := terminal.Args.Arg
-	netClient.DestIP = netClient.ResolveIpAddress(url)
 
 	size := options.Size
 

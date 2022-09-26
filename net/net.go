@@ -16,12 +16,25 @@ type client struct {
 	DestIP     *network.IPAddr
 }
 
-func NewClient() *client {
+func NewClient(options cli.Options, url string) *client {
 	// Creates a new ICMP socket connection.
 	c, err := icmp.ListenPacket("udp4", "0.0.0.0")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = c.IPv4PacketConn().SetTTL(options.TTL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Setting the control message, passes IP header info back when we call ReadFrom() in a *controlMessage
+	err = c.IPv4PacketConn().SetControlMessage(ipv4.FlagTTL, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	destIP := resolveIpAddress(url)
 
 	// @TODO Need to figure out how this will work with the Net struct
 	// Wrap handler in a closure.
@@ -34,10 +47,11 @@ func NewClient() *client {
 
 	return &client{
 		Connection: c,
+		DestIP:     destIP,
 	}
 }
 
-func (c client) ResolveIpAddress(url string) *network.IPAddr {
+func resolveIpAddress(url string) *network.IPAddr {
 	ip, err := network.ResolveIPAddr("ip4", url)
 	if err != nil {
 		panic(err)
@@ -61,12 +75,6 @@ func (c *client) Ping(options cli.Options, seq int) {
 		log.Fatal(err)
 	}
 
-	err = c.Connection.IPv4PacketConn().SetTTL(options.TTL)
-	// Setting the control message, passes IP header info back when we call ReadFrom() in a *controlMessage
-	err = c.Connection.IPv4PacketConn().SetControlMessage(ipv4.FlagTTL, true)
-	if err != nil {
-		log.Fatal(err)
-	}
 	if _, err := c.Connection.WriteTo(wb, &network.UDPAddr{IP: network.ParseIP(c.DestIP.String())}); err != nil {
 		log.Fatal(err)
 	}
