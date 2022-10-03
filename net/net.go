@@ -36,15 +36,6 @@ func NewClient(options cli.Options, url string) *client {
 
 	destIP := resolveIpAddress(url)
 
-	// @TODO Need to figure out how this will work with the Net struct
-	// Wrap handler in a closure.
-	//defer func(c *icmp.PacketConn) {
-	//	err := c.Close()
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//}(c)
-
 	return &client{
 		Connection: c,
 		DestIP:     destIP,
@@ -68,12 +59,15 @@ func (c *client) Close() {
 }
 
 func (c *client) Ping(options cli.Options, seq int) {
+	// @TODO Do we really need to create a new packet on every ping?
 	wm := pingDatagram(options.Size, seq)
 
 	wb, err := wm.Marshal(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	start := time.Now()
 
 	if _, err := c.Connection.WriteTo(wb, &network.UDPAddr{IP: network.ParseIP(c.DestIP.String())}); err != nil {
 		log.Fatal(err)
@@ -90,6 +84,8 @@ func (c *client) Ping(options cli.Options, seq int) {
 	var cm *ipv4.ControlMessage
 	var ttl, numOfBytes int
 	numOfBytes, cm, _, err = c.Connection.IPv4PacketConn().ReadFrom(receivedPayload)
+	t := time.Now()
+	responseTime := t.Sub(start).Truncate(time.Microsecond)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,7 +103,7 @@ func (c *client) Ping(options cli.Options, seq int) {
 
 	switch receivedICMPMessage.Type {
 	case ipv4.ICMPTypeEchoReply:
-		fmt.Printf("%v bytes received from %v: icmp_seq=%v ttl=%v time=34.905 ms\r\n", numOfBytes, c.DestIP, replySeq, ttl)
+		fmt.Printf("%v bytes received from %v: icmp_seq=%v ttl=%v responseTime=%s\r\n", numOfBytes, c.DestIP, replySeq, ttl, responseTime)
 		if numOfBytes != options.Size {
 			fmt.Printf("wrong total length %v instead of %v\r\n", numOfBytes, options.Size)
 		}

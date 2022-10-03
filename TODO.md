@@ -1,8 +1,6 @@
 # Todo list
 
 ## Backlog
-* Add timers
-* Display timers
 * Flags to add
   * -f flood 
   * -l preload (but with safety rails)
@@ -16,3 +14,4 @@
 * Tests
 * Concurrency y'all
 * Summary/Statistics line
+* Allow exit signal and fatal errors while still restoring the terminal to its oldState.

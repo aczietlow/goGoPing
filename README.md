@@ -75,3 +75,9 @@ a = 60      // 0011 1100
 b = 13      // 0000 1101
 c = 60 | 13 // 0011 11011
 ```
+
+### Sockets
+
+[Documentation](https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10)
+
+Come from BSD and the API specifications are contained in an IEEE publication. Berkley Sockets, BSD Sockets, and POSIX Sockets are all synonyms for the same thing.
